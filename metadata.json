@@ -1,0 +1,6 @@
+{
+  "name": "Vintage 90s Desktop",
+  "description": "Functional 90s retro computer desktop homepage for managing app shortcuts, external links, and custom HTML apps.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

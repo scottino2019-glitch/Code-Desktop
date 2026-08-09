@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@layer utilities {
+  /* Authentic Vintage Windows 95 Bevel Styles */
+  .win95-outset {
+    background-color: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    box-shadow: 1px 1px 0px 0px #808080;
+  }
+
+  .win95-inset {
+    background-color: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    box-shadow: inset 1px 1px 0px 0px #000000;
+  }
+
+  .win95-button {
+    background-color: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    box-shadow: 1px 1px 0px 0px #808080;
+  }
+
+  .win95-button:active, .win95-button-pressed {
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    box-shadow: inset 1px 1px 0px 0px #808080;
+    padding-top: 1px;
+    padding-left: 1px;
+  }
+
+  /* Classic Windows 95 Navy Blue Titlebar */
+  .win95-titlebar {
+    background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+    color: #ffffff;
+    font-weight: bold;
+  }
+
+  .win95-titlebar-inactive {
+    background: #808080;
+    color: #c0c0c0;
+    font-weight: normal;
+  }
+
+  /* Soft optional screen overlay without harsh scanlines or flickering */
+  .crt-overlay {
+    pointer-events: none;
+    opacity: 0;
+  }
+}
+
+/* Custom scrollbar for authentic 90s aesthetic */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e0e0e0;
+  border-left: 1px solid #808080;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+}
+
+::-webkit-scrollbar-button {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  width: 16px;
+  height: 16px;
+}
+
+/* Authentic Windows 95 System Font */
+body {
+  font-family: 'Tahoma', 'MS Sans Serif', Geneva, Arial, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+  background-color: #008080;
+  color: #000000;
+  -webkit-font-smoothing: antialiased;
+}
+
