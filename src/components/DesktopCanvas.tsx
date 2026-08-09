@@ -237,7 +237,11 @@ export const DesktopCanvas: React.FC<DesktopCanvasProps> = ({
             )}
 
             {win.appType === 'browser' && (
-              <WebBrowserApp initialUrl={win.contentUrl || 'https://www.google.com'} />
+              <WebBrowserApp
+                initialUrl={win.contentUrl || 'https://www.google.com/search?igu=1'}
+                appName={win.title}
+                onCloseAppWindow={() => onCloseWindow(win.id)}
+              />
             )}
 
             {win.appType === 'my_computer' && (

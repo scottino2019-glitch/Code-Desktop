@@ -4,9 +4,17 @@ import { soundFx } from '../../utils/audio';
 
 interface WebBrowserAppProps {
   initialUrl?: string;
+  appName?: string;
+  onCloseAppWindow?: () => void;
 }
 
-export const WebBrowserApp: React.FC<WebBrowserAppProps> = ({ initialUrl = 'https://www.wikipedia.org' }) => {
+const GOOGLE_HOME_URL = 'https://www.google.com/search?igu=1';
+
+export const WebBrowserApp: React.FC<WebBrowserAppProps> = ({
+  initialUrl = GOOGLE_HOME_URL,
+  appName = 'App Web',
+  onCloseAppWindow,
+}) => {
   const [url, setUrl] = useState(initialUrl);
   const [currentUrl, setCurrentUrl] = useState(initialUrl);
   const [key, setKey] = useState(0);
@@ -23,16 +31,32 @@ export const WebBrowserApp: React.FC<WebBrowserAppProps> = ({ initialUrl = 'http
     setKey((prev) => prev + 1);
   };
 
+  const handleGoGoogle = () => {
+    soundFx.playClick();
+    setCurrentUrl(GOOGLE_HOME_URL);
+    setUrl(GOOGLE_HOME_URL);
+    setKey((prev) => prev + 1);
+  };
+
+  const handleReturnToInitialApp = () => {
+    soundFx.playClick();
+    setCurrentUrl(initialUrl);
+    setUrl(initialUrl);
+    setKey((prev) => prev + 1);
+  };
+
   const handleRefresh = () => {
     soundFx.playClick();
     setKey((prev) => prev + 1);
   };
 
+  const isAwayFromApp = currentUrl !== initialUrl;
+
   return (
     <div className="flex flex-col h-full bg-[#c0c0c0] font-sans text-xs text-black">
       {/* 90s Browser Toolbar */}
       <div className="win95-outset p-1 flex flex-col gap-1 bg-[#c0c0c0]">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           <button
             onClick={() => soundFx.playClick()}
             className="win95-button p-1 flex items-center gap-1 hover:bg-gray-200"
@@ -54,27 +78,41 @@ export const WebBrowserApp: React.FC<WebBrowserAppProps> = ({ initialUrl = 'http
           >
             <RotateCw size={14} />
           </button>
+
+          {/* Home Google Button */}
           <button
-            onClick={() => {
-              soundFx.playClick();
-              setCurrentUrl('https://it.wikipedia.org');
-              setUrl('https://it.wikipedia.org');
-            }}
-            className="win95-button p-1 flex items-center gap-1 hover:bg-gray-200"
-            title="Pagina Iniziale"
+            type="button"
+            onClick={handleGoGoogle}
+            className="win95-button px-2 py-1 flex items-center gap-1 font-bold bg-gray-100 hover:bg-gray-200"
+            title="Apri Google Search"
           >
             <Home size={14} />
+            <span>Google</span>
           </button>
 
-          <form onSubmit={handleNavigate} className="flex-1 flex items-center gap-1 ml-2">
-            <span className="font-bold flex items-center gap-1">
+          {/* Return to Initial Opened App Button */}
+          <button
+            type="button"
+            onClick={handleReturnToInitialApp}
+            className={`win95-button px-2.5 py-1 flex items-center gap-1.5 font-bold transition-all ${
+              isAwayFromApp
+                ? 'bg-[#000080] text-white hover:bg-blue-900 border border-blue-400'
+                : 'bg-gray-100 text-black hover:bg-gray-200'
+            }`}
+            title={`Ritorna alla pagina principale dell'app aperta: ${appName}`}
+          >
+            <span>📱 Torna all'App</span>
+          </button>
+
+          <form onSubmit={handleNavigate} className="flex-1 flex items-center gap-1 ml-1 min-w-[180px]">
+            <span className="font-bold flex items-center gap-1 whitespace-nowrap">
               <Globe size={14} className="text-blue-800" /> Indirizzo:
             </span>
             <input
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="win95-inset flex-1 p-1 font-mono focus:outline-none bg-white"
+              className="win95-inset flex-1 p-1 font-mono focus:outline-none bg-white min-w-[110px]"
             />
             <button
               type="submit"
@@ -99,9 +137,9 @@ export const WebBrowserApp: React.FC<WebBrowserAppProps> = ({ initialUrl = 'http
         </div>
       </div>
 
-      {/* Warning Bar for X-Frame-Options */}
-      <div className="bg-amber-50 border-y border-amber-300 px-2 py-1 text-[11px] text-amber-900 flex justify-between items-center">
-        <span>💡 Nota: Se il sito esterno blocca l'incorporamento, clicca su "Nuova Scheda".</span>
+      {/* Navigation Info Bar */}
+      <div className="bg-amber-50 border-y border-amber-300 px-2 py-1 text-[11px] text-amber-900 flex justify-between items-center gap-2">
+        <span>🔍 Clicca su <b>"Google"</b> per cercare o su <b>"📱 Torna all'App"</b> per rientrare subito all'app aperta ({appName}).</span>
       </div>
 
       {/* Browser iFrame Container */}
