@@ -12,7 +12,7 @@ interface AddShortcutModalProps {
 const AVAILABLE_ICONS = [
   'Globe', 'HardDrive', 'Code2', 'Calculator', 'FileText', 'Settings',
   'Trash2', 'Folder', 'Terminal', 'Sparkles', 'ExternalLink', 'Gamepad2',
-  'Music', 'Image', 'Mail', 'Info', '🌐', '💻', '⚡', '🎮', '📁', '📝', '🚀', '🔥'
+  'Music', 'Image', 'Mail', 'Info', '🌐', '💻', '🧰', '🎮', '📱', '📝', '🖥', '🖲', '🖱'
 ];
 
 const CATEGORIES = ['Generale', 'Strumenti', 'Lavoro', 'Giochi', 'Personale', 'Esempi'];
