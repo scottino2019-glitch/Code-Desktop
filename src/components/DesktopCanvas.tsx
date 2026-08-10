@@ -224,8 +224,11 @@ export const DesktopCanvas: React.FC<DesktopCanvasProps> = ({
             {win.appType === 'html_runner' && (
               <HtmlRunnerApp
                 initialCode={win.htmlCode}
-                onSaveAsApp={(title, code) => {
+                initialTitle={win.title !== 'Editor App HTML' ? win.title : undefined}
+                shortcutId={win.shortcutId}
+                onSaveAsApp={(title, code, existingId) => {
                   onSaveShortcut({
+                    id: existingId,
                     title,
                     type: 'html_content',
                     htmlContent: code,
@@ -287,13 +290,69 @@ export const DesktopCanvas: React.FC<DesktopCanvasProps> = ({
             {win.appType === 'system_info' && <SystemInfoModal />}
 
             {win.appType === 'html_viewer' && (
-              <div className="w-full h-full bg-white win95-inset overflow-hidden">
-                <iframe
-                  title={win.title}
-                  srcDoc={win.htmlCode || '<h1>Senza contenuto</h1>'}
-                  className="w-full h-full border-none"
-                  sandbox="allow-scripts allow-modals allow-forms"
-                />
+              <div className="flex flex-col h-full bg-[#c0c0c0] font-sans text-xs text-black">
+                {/* HTML App Action Bar */}
+                <div className="win95-outset p-1 flex items-center justify-between gap-2 bg-[#c0c0c0] border-b border-gray-400">
+                  <div className="flex items-center gap-1.5 overflow-hidden">
+                    <span className="font-bold flex items-center gap-1 text-[#000080] truncate">
+                      📱 {win.title}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playClick();
+                        onOpenShortcut({
+                          id: win.shortcutId || `html_edit_${Date.now()}`,
+                          title: win.title,
+                          icon: 'Code2',
+                          type: 'app',
+                          appType: 'html_runner',
+                          htmlContent: win.htmlCode,
+                          createdAt: Date.now(),
+                        });
+                      }}
+                      className="win95-button px-2 py-1 flex items-center gap-1 font-bold bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-400"
+                      title="Apri il codice di questa app nell'Editor HTML per modificarlo e salvarlo"
+                    >
+                      <span>✏️ Modifica Codice</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFx.playClick();
+                        try {
+                          const blob = new Blob([win.htmlCode || ''], { type: 'text/html;charset=utf-8' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          const safeFilename = win.title.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'app';
+                          link.href = url;
+                          link.download = `${safeFilename}.html`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                        } catch (e) {
+                          alert('Errore nel download del file.');
+                        }
+                      }}
+                      className="win95-button px-2 py-1 flex items-center gap-1 hover:bg-gray-200"
+                      title="Scarica il file .html nel tuo computer"
+                    >
+                      <span>💾 Scarica .html</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="win95-inset flex-1 w-full bg-white relative overflow-hidden">
+                  <iframe
+                    title={win.title}
+                    srcDoc={win.htmlCode || '<h1>Senza contenuto</h1>'}
+                    className="w-full h-full border-none"
+                    sandbox="allow-scripts allow-modals allow-forms"
+                  />
+                </div>
               </div>
             )}
           </WindowFrame>

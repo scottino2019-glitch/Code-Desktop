@@ -28,13 +28,32 @@ export function loadShortcuts(): Shortcut[] {
           s.id !== 'sample_external_google' &&
           s.id !== 'sample_external_wikipedia'
       );
-      let result = filtered;
-      const hasAddLink = result.some((s: Shortcut) => s.appType === 'add_shortcut' || s.id === 'add_new_link');
-      if (!hasAddLink) {
-        result = [DEFAULT_SHORTCUTS[0], ...result];
-      }
-      saveShortcuts(result);
-      return result;
+      
+      // Repair any system shortcuts that might have been overwritten
+      const repaired = filtered.map((s: Shortcut) => {
+        const sysDefault = DEFAULT_SHORTCUTS.find((d) => d.id === s.id);
+        if (sysDefault) {
+          return {
+            ...s,
+            title: sysDefault.title,
+            type: sysDefault.type,
+            appType: sysDefault.appType,
+            isSystem: true,
+            icon: sysDefault.icon,
+          };
+        }
+        return s;
+      });
+
+      // Ensure all default system shortcuts are present
+      DEFAULT_SHORTCUTS.forEach((sysShortcut) => {
+        if (!repaired.some((s: Shortcut) => s.id === sysShortcut.id)) {
+          repaired.push(sysShortcut);
+        }
+      });
+
+      saveShortcuts(repaired);
+      return repaired;
     }
   } catch (err) {
     console.error('Failed to load shortcuts from localStorage:', err);

@@ -55,9 +55,45 @@ export default function App() {
   const handleOpenShortcut = (shortcut: Shortcut) => {
     if (!shortcut) return;
 
-    // Check if window already exists
-    const existingWindow = windows.find((w) => w.shortcutId === shortcut.id || (shortcut.appType && w.appType === shortcut.appType));
+    // Special handling for HTML runner (Editor) when passing custom code
+    if (shortcut.appType === 'html_runner') {
+      const existingRunner = windows.find((w) => w.appType === 'html_runner');
+      if (existingRunner) {
+        if (shortcut.htmlContent !== undefined) {
+          setWindows((prev) =>
+            prev.map((w) =>
+              w.id === existingRunner.id
+                ? {
+                    ...w,
+                    htmlCode: shortcut.htmlContent,
+                    title: shortcut.title !== 'Editor App HTML' ? shortcut.title : w.title,
+                    shortcutId: shortcut.id.startsWith('html_edit_') ? undefined : shortcut.id,
+                  }
+                : w
+            )
+          );
+        }
+        bringToFocus(existingRunner.id);
+        return;
+      }
+    }
+
+    // Check if window already exists for this exact shortcut ID
+    const existingWindow = windows.find(
+      (w) => w.shortcutId === shortcut.id || (shortcut.appType && w.appType === shortcut.appType)
+    );
+
     if (existingWindow) {
+      // If opening an existing HTML viewer, ensure its code is fresh from the shortcut
+      if (existingWindow.appType === 'html_viewer' && shortcut.htmlContent !== undefined) {
+        setWindows((prev) =>
+          prev.map((w) =>
+            w.id === existingWindow.id
+              ? { ...w, htmlCode: shortcut.htmlContent, title: shortcut.title }
+              : w
+          )
+        );
+      }
       bringToFocus(existingWindow.id);
       return;
     }
@@ -72,7 +108,7 @@ export default function App() {
 
     const newWin: WindowState = {
       id: `win_${shortcut.id}_${Date.now()}`,
-      shortcutId: shortcut.id,
+      shortcutId: shortcut.id.startsWith('html_edit_') ? undefined : shortcut.id,
       title: shortcut.title,
       icon: shortcut.icon,
       appType,
@@ -174,27 +210,69 @@ export default function App() {
 
   // Create or Update Shortcut
   const handleSaveShortcutData = (data: Partial<Shortcut>) => {
-    if (editingShortcut) {
-      // Update existing
-      const updated = shortcuts.map((s) => (s.id === editingShortcut.id ? { ...s, ...data } : s));
-      updateShortcutsState(updated);
-      setEditingShortcut(null);
-    } else {
-      // Create new
-      const newShortcut: Shortcut = {
-        id: `sc_${Date.now()}`,
-        title: data.title || 'Nuova App',
-        description: data.description || '',
-        icon: data.icon || 'Globe',
-        type: data.type || 'external_link',
-        url: data.url,
-        htmlContent: data.htmlContent,
-        target: data.target || 'new_tab',
-        category: data.category || 'Generale',
-        createdAt: Date.now(),
-      };
-      updateShortcutsState([...shortcuts, newShortcut]);
+    const targetId = data.id || editingShortcut?.id;
+
+    if (targetId) {
+      const exists = shortcuts.some((s) => s.id === targetId);
+      if (exists) {
+        const updated = shortcuts.map((s) => (s.id === targetId ? { ...s, ...data } : s));
+        updateShortcutsState(updated);
+        setEditingShortcut(null);
+
+        // Update all open windows that correspond to this shortcut
+        setWindows((prev) =>
+          prev.map((w) => {
+            if (w.shortcutId === targetId) {
+              return {
+                ...w,
+                title: data.title || w.title,
+                htmlCode: data.htmlContent !== undefined ? data.htmlContent : w.htmlCode,
+                contentUrl: data.url !== undefined ? data.url : w.contentUrl,
+              };
+            }
+            return w;
+          })
+        );
+
+        soundFx.playStartup();
+        return;
+      }
     }
+
+    // Create new
+    const newId = data.id || `sc_${Date.now()}`;
+    const newShortcut: Shortcut = {
+      id: newId,
+      title: data.title || 'Nuova App',
+      description: data.description || '',
+      icon: data.icon || 'Code2',
+      type: data.type || (data.htmlContent !== undefined ? 'html_content' : 'external_link'),
+      url: data.url,
+      htmlContent: data.htmlContent,
+      target: data.target || 'new_tab',
+      category: data.category || 'Miei Programmi',
+      createdAt: Date.now(),
+    };
+
+    updateShortcutsState([...shortcuts, newShortcut]);
+
+    // Update active html_runner window to bind to this newly created shortcut
+    if (data.htmlContent !== undefined) {
+      setWindows((prev) =>
+        prev.map((w) => {
+          if (w.appType === 'html_runner') {
+            return {
+              ...w,
+              shortcutId: newId,
+              title: data.title || w.title,
+              htmlCode: data.htmlContent,
+            };
+          }
+          return w;
+        })
+      );
+    }
+
     soundFx.playStartup();
   };
 
