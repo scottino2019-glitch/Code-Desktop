@@ -144,7 +144,7 @@ export const HtmlRunnerApp: React.FC<HtmlRunnerAppProps> = ({
 
   // Sync state if initialCode or initialTitle changes (e.g., when switching apps to edit)
   React.useEffect(() => {
-    if (initialCode !== undefined && initialCode !== '') {
+    if (initialCode !== undefined) {
       setCode(initialCode);
     }
   }, [initialCode]);
@@ -322,18 +322,39 @@ export const HtmlRunnerApp: React.FC<HtmlRunnerAppProps> = ({
           </select>
 
           {onSaveAsApp && (
-            <button
-              type="button"
-              onClick={() => {
-                soundFx.playClick();
-                setIsSaving(true);
-              }}
-              className="win95-button px-3 py-1 flex items-center gap-1.5 font-bold bg-[#000080] text-white hover:bg-blue-900 border border-blue-400"
-              title="Salva l'app sul Desktop come icona o aggiorna l'app esistente"
-            >
-              <Save size={14} />
-              <span>{shortcutId ? 'Salva Modifiche App' : 'Salva sul Desktop'}</span>
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playClick();
+                  if (targetAppId) {
+                    onSaveAsApp(appTitle, code, targetAppId);
+                    showToast(`✅ Modifiche salvate con successo per "${appTitle}"!`);
+                  } else {
+                    setIsSaving(true);
+                  }
+                }}
+                className="win95-button px-3 py-1 flex items-center gap-1.5 font-bold bg-[#000080] text-white hover:bg-blue-900 border border-blue-400"
+                title={targetAppId ? "Salva immediatamente le modifiche al codice dell'app" : "Salva l'app sul Desktop"}
+              >
+                <Save size={14} />
+                <span>{targetAppId ? 'Salva Modifiche' : 'Salva sul Desktop'}</span>
+              </button>
+
+              {targetAppId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFx.playClick();
+                    setIsSaving(true);
+                  }}
+                  className="win95-button px-2 py-1 flex items-center gap-1 hover:bg-gray-200"
+                  title="Rinomina o salva con altro nome"
+                >
+                  <span>Rinomina...</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

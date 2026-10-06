@@ -135,6 +135,21 @@ export const MyComputerApp: React.FC<MyComputerAppProps> = ({
                   >
                     Apri
                   </button>
+                  {item.type === 'html_content' && (
+                    <button
+                      onClick={() => {
+                        soundFx.playClick();
+                        onOpenShortcut({
+                          ...item,
+                          appType: 'html_runner',
+                        });
+                      }}
+                      className="win95-button p-1 hover:bg-amber-100 text-amber-900 border border-amber-300"
+                      title="Modifica Codice HTML"
+                    >
+                      <Code2 size={12} />
+                    </button>
+                  )}
                   {!item.isSystem && (
                     <>
                       <button
@@ -196,6 +211,21 @@ export const MyComputerApp: React.FC<MyComputerAppProps> = ({
                       >
                         Apri
                       </button>
+                      {item.type === 'html_content' && (
+                        <button
+                          onClick={() => {
+                            soundFx.playClick();
+                            onOpenShortcut({
+                              ...item,
+                              appType: 'html_runner',
+                            });
+                          }}
+                          className="win95-button p-1 hover:bg-amber-100 text-amber-900 border border-amber-300"
+                          title="Modifica Codice HTML"
+                        >
+                          <Code2 size={12} />
+                        </button>
+                      )}
                       {!item.isSystem && (
                         <>
                           <button
