@@ -83,6 +83,21 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
           </button>
           {!shortcut.isSystem && (
             <>
+              {shortcut.type === 'html_content' && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setContextMenu(null);
+                    onOpen({
+                      ...shortcut,
+                      appType: 'html_runner',
+                    });
+                  }}
+                  className="w-full text-left px-3 py-1 hover:bg-[#000080] hover:text-white flex items-center gap-2 font-bold text-amber-900 hover:text-white"
+                >
+                  ✏️ Modifica Codice HTML
+                </button>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -91,7 +106,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
                 }}
                 className="w-full text-left px-3 py-1 hover:bg-[#000080] hover:text-white flex items-center gap-2"
               >
-                ✏️ Modifica
+                ⚙️ Proprietà / Dettagli
               </button>
               <div className="my-1 border-t border-gray-400 border-b border-white"></div>
               <button

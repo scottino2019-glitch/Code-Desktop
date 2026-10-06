@@ -223,8 +223,13 @@ export const DesktopCanvas: React.FC<DesktopCanvasProps> = ({
 
             {win.appType === 'html_runner' && (
               <HtmlRunnerApp
+                key={win.id + '_' + (win.shortcutId || 'new')}
                 initialCode={win.htmlCode}
-                initialTitle={win.title !== 'Editor App HTML' ? win.title : undefined}
+                initialTitle={
+                  win.title
+                    ? win.title.replace(/^Editor HTML\s*-\s*|^Modifica:\s*/i, '').trim()
+                    : undefined
+                }
                 shortcutId={win.shortcutId}
                 onSaveAsApp={(title, code, existingId) => {
                   onSaveShortcut({
@@ -303,9 +308,22 @@ export const DesktopCanvas: React.FC<DesktopCanvasProps> = ({
                       type="button"
                       onClick={() => {
                         soundFx.playClick();
+                        const cleanTitle = win.title.replace(/^Editor HTML\s*-\s*|^Modifica:\s*/i, '').trim();
+                        let targetShortcutId = win.shortcutId;
+                        if (!targetShortcutId) {
+                          const matching = shortcuts.find(
+                            (s) =>
+                              s.title.toLowerCase() === cleanTitle.toLowerCase() ||
+                              s.title.toLowerCase() === win.title.toLowerCase()
+                          );
+                          if (matching) {
+                            targetShortcutId = matching.id;
+                          }
+                        }
+
                         onOpenShortcut({
-                          id: win.shortcutId || `html_edit_${Date.now()}`,
-                          title: win.title,
+                          id: targetShortcutId || `html_edit_${Date.now()}`,
+                          title: cleanTitle,
                           icon: 'Code2',
                           type: 'app',
                           appType: 'html_runner',
@@ -313,7 +331,7 @@ export const DesktopCanvas: React.FC<DesktopCanvasProps> = ({
                           createdAt: Date.now(),
                         });
                       }}
-                      className="win95-button px-2 py-1 flex items-center gap-1 font-bold bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-400"
+                      className="win95-button px-2.5 py-1 flex items-center gap-1 font-bold bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-400 active:translate-y-0.5 cursor-pointer shadow-xs"
                       title="Apri il codice di questa app nell'Editor HTML per modificarlo e salvarlo"
                     >
                       <span>✏️ Modifica Codice</span>
