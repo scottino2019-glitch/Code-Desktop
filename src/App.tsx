@@ -55,32 +55,79 @@ export default function App() {
   const handleOpenShortcut = (shortcut: Shortcut) => {
     if (!shortcut) return;
 
-    // Special handling for HTML runner (Editor) when passing custom code
+    // Special handling for HTML runner (Editor) when editing or creating app code
     if (shortcut.appType === 'html_runner') {
+      const targetShortcutId = (shortcut.id && !shortcut.id.startsWith('html_edit_') && shortcut.id !== 'html_runner' && shortcut.id !== 'html_editor')
+        ? shortcut.id
+        : undefined;
+
+      const cleanTitle = shortcut.title
+        ? shortcut.title.replace(/^Editor HTML\s*-\s*|^Modifica:\s*/i, '').trim()
+        : '';
+
+      const runnerWindowTitle = cleanTitle && cleanTitle !== 'Editor App HTML'
+        ? `Editor HTML - ${cleanTitle}`
+        : 'Editor App HTML';
+
+      const nextZ = Math.max(topZ, ...windows.map((w) => w.zIndex || 100)) + 1;
+      setTopZ(nextZ + 1);
+
       const existingRunner = windows.find((w) => w.appType === 'html_runner');
       if (existingRunner) {
-        if (shortcut.htmlContent !== undefined) {
-          setWindows((prev) =>
-            prev.map((w) =>
-              w.id === existingRunner.id
-                ? {
-                    ...w,
-                    htmlCode: shortcut.htmlContent,
-                    title: shortcut.title !== 'Editor App HTML' ? shortcut.title : w.title,
-                    shortcutId: shortcut.id.startsWith('html_edit_') ? undefined : shortcut.id,
-                  }
-                : w
-            )
-          );
-        }
+        soundFx.playWindowOpen();
+        setWindows((prev) =>
+          prev.map((w) =>
+            w.id === existingRunner.id
+              ? {
+                  ...w,
+                  htmlCode: shortcut.htmlContent !== undefined ? shortcut.htmlContent : w.htmlCode,
+                  title: runnerWindowTitle,
+                  shortcutId: targetShortcutId,
+                  isMinimized: false,
+                  zIndex: nextZ,
+                }
+              : w
+          )
+        );
         bringToFocus(existingRunner.id);
         return;
       }
+
+      // If no HTML runner window exists yet, create and open a new one
+      soundFx.playWindowOpen();
+      const newWin: WindowState = {
+        id: `sys_html_runner_${Date.now()}`,
+        shortcutId: targetShortcutId,
+        title: runnerWindowTitle,
+        icon: 'Code2',
+        appType: 'html_runner',
+        htmlCode: shortcut.htmlContent || '',
+        isMinimized: false,
+        isMaximized: false,
+        zIndex: nextZ,
+        position: {
+          x: Math.min(Math.max(30, window.innerWidth - 740), 75 + (windows.length % 4) * 25),
+          y: Math.min(Math.max(25, window.innerHeight - 560), 40 + (windows.length % 4) * 20),
+        },
+        size: { width: 730, height: 520 },
+      };
+
+      setWindows((prev) => [...prev, newWin]);
+      setActiveWindowId(newWin.id);
+      return;
     }
 
-    // Check if window already exists for this exact shortcut ID
+    const targetAppType: AppType | 'external_viewer' | 'html_viewer' =
+      shortcut.type === 'external_link'
+        ? 'browser'
+        : shortcut.type === 'html_content'
+        ? 'html_viewer'
+        : (shortcut.appType || 'my_computer');
+
+    // Check if window already exists for this exact shortcut ID and appType
     const existingWindow = windows.find(
-      (w) => w.shortcutId === shortcut.id || (shortcut.appType && w.appType === shortcut.appType)
+      (w) => (w.shortcutId && w.shortcutId === shortcut.id && w.appType === targetAppType) ||
+             (shortcut.appType && w.appType === shortcut.appType)
     );
 
     if (existingWindow) {
@@ -102,16 +149,12 @@ export default function App() {
     const nextZ = Math.max(topZ, ...windows.map((w) => w.zIndex || 100)) + 1;
     setTopZ(nextZ + 1);
 
-    let appType: AppType | 'external_viewer' | 'html_viewer' = shortcut.appType || 'my_computer';
-    if (shortcut.type === 'external_link') appType = 'browser';
-    if (shortcut.type === 'html_content') appType = 'html_viewer';
-
     const newWin: WindowState = {
       id: `win_${shortcut.id}_${Date.now()}`,
       shortcutId: shortcut.id.startsWith('html_edit_') ? undefined : shortcut.id,
       title: shortcut.title,
       icon: shortcut.icon,
-      appType,
+      appType: targetAppType,
       contentUrl: shortcut.url,
       htmlCode: shortcut.htmlContent,
       isMinimized: false,
@@ -225,7 +268,9 @@ export default function App() {
             if (w.shortcutId === targetId) {
               return {
                 ...w,
-                title: data.title || w.title,
+                title: w.appType === 'html_runner'
+                  ? `Editor HTML - ${data.title || w.title.replace(/^Editor HTML\s*-\s*|^Modifica:\s*/i, '').trim()}`
+                  : (data.title || w.title),
                 htmlCode: data.htmlContent !== undefined ? data.htmlContent : w.htmlCode,
                 contentUrl: data.url !== undefined ? data.url : w.contentUrl,
               };
@@ -264,7 +309,7 @@ export default function App() {
             return {
               ...w,
               shortcutId: newId,
-              title: data.title || w.title,
+              title: data.title ? `Editor HTML - ${data.title}` : w.title,
               htmlCode: data.htmlContent,
             };
           }
